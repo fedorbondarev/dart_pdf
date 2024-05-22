@@ -25,6 +25,8 @@ import 'parser.dart';
 
 enum SvgTextAnchor { start, middle, end }
 
+enum SvgDominantBaseline { hanging, middle, auto, textTop }
+
 @immutable
 class SvgBrush {
   const SvgBrush({
@@ -45,6 +47,7 @@ class SvgBrush {
     required this.fontStyle,
     required this.fontWeight,
     required this.textAnchor,
+    required this.dominantBaseline,
     required this.blendMode,
     this.mask,
   });
@@ -65,16 +68,11 @@ class SvgBrush {
     final result = parent.merge(SvgBrush(
       opacity: SvgParser.getDouble(element, 'opacity', defaultValue: null),
       blendMode: blendMode == null ? null : _blendModes[blendMode],
-      fillOpacity:
-          SvgParser.getDouble(element, 'fill-opacity', defaultValue: null),
-      strokeOpacity:
-          SvgParser.getDouble(element, 'stroke-opacity', defaultValue: null),
-      strokeLineCap:
-          strokeLineCap == null ? null : _strokeLineCap[strokeLineCap],
-      strokeLineJoin:
-          strokeLineJoin == null ? null : _strokeLineJoin[strokeLineJoin],
-      strokeMiterLimit:
-          SvgParser.getDouble(element, 'stroke-miterlimit', defaultValue: null),
+      fillOpacity: SvgParser.getDouble(element, 'fill-opacity', defaultValue: null),
+      strokeOpacity: SvgParser.getDouble(element, 'stroke-opacity', defaultValue: null),
+      strokeLineCap: strokeLineCap == null ? null : _strokeLineCap[strokeLineCap],
+      strokeLineJoin: strokeLineJoin == null ? null : _strokeLineJoin[strokeLineJoin],
+      strokeMiterLimit: SvgParser.getDouble(element, 'stroke-miterlimit', defaultValue: null),
       fill: SvgColor.fromXml(element.getAttribute('fill'), painter),
       fillEvenOdd: fillRule == null ? null : fillRule == 'evenodd',
       stroke: SvgColor.fromXml(element.getAttribute('stroke'), painter),
@@ -83,16 +81,14 @@ class SvgBrush {
           ? null
           : (strokeDashArray == 'none'
               ? []
-              : SvgParser.splitNumeric(strokeDashArray, parent)
-                  .map((e) => e.value)
-                  .toList()),
-      strokeDashOffset:
-          SvgParser.getNumeric(element, 'stroke-dashoffset', parent)?.sizeValue,
+              : SvgParser.splitNumeric(strokeDashArray, parent).map((e) => e.value).toList()),
+      strokeDashOffset: SvgParser.getNumeric(element, 'stroke-dashoffset', parent)?.sizeValue,
       fontSize: SvgParser.getNumeric(element, 'font-size', parent),
       fontFamily: element.getAttribute('font-family'),
       fontStyle: element.getAttribute('font-style'),
       fontWeight: element.getAttribute('font-weight'),
       textAnchor: _textAnchors[element.getAttribute('text-anchor')],
+      dominantBaseline: _dominantBaselines[element.getAttribute('dominant-baseline')],
     ));
 
     final mask = SvgMaskPath.fromXml(element, painter, result);
@@ -122,6 +118,7 @@ class SvgBrush {
     fontWeight: 'normal',
     fontStyle: 'normal',
     textAnchor: SvgTextAnchor.start,
+    dominantBaseline: SvgDominantBaseline.auto,
     mask: null,
   );
 
@@ -162,6 +159,13 @@ class SvgBrush {
     'end': SvgTextAnchor.end,
   };
 
+  static const _dominantBaselines = <String, SvgDominantBaseline>{
+    'auto': SvgDominantBaseline.auto,
+    'middle': SvgDominantBaseline.middle,
+    'hanging': SvgDominantBaseline.hanging,
+    'textTop': SvgDominantBaseline.textTop,
+  };
+
   final double? opacity;
   final SvgColor? fill;
   final bool? fillEvenOdd;
@@ -181,6 +185,7 @@ class SvgBrush {
   final SvgTextAnchor? textAnchor;
   final PdfBlendMode? blendMode;
   final SvgMaskPath? mask;
+  final SvgDominantBaseline? dominantBaseline;
 
   SvgBrush merge(SvgBrush? other) {
     if (other == null) {
@@ -215,6 +220,7 @@ class SvgBrush {
       fontStyle: other.fontStyle ?? fontStyle,
       fontWeight: other.fontWeight ?? fontWeight,
       textAnchor: other.textAnchor ?? textAnchor,
+      dominantBaseline: other.dominantBaseline ?? dominantBaseline,
       strokeLineCap: other.strokeLineCap ?? strokeLineCap,
       strokeLineJoin: other.strokeLineJoin ?? strokeLineJoin,
       strokeMiterLimit: other.strokeMiterLimit ?? strokeMiterLimit,
@@ -240,6 +246,7 @@ class SvgBrush {
     String? fontStyle,
     String? fontWeight,
     SvgTextAnchor? textAnchor,
+    SvgDominantBaseline? dominantBaseline,
     PdfBlendMode? blendMode,
     SvgMaskPath? mask,
   }) {
@@ -261,6 +268,7 @@ class SvgBrush {
       fontStyle: fontStyle ?? this.fontStyle,
       fontWeight: fontWeight ?? this.fontWeight,
       textAnchor: textAnchor ?? this.textAnchor,
+      dominantBaseline: dominantBaseline ?? this.dominantBaseline,
       blendMode: blendMode ?? this.blendMode,
       mask: mask ?? this.mask,
     );
@@ -268,5 +276,5 @@ class SvgBrush {
 
   @override
   String toString() =>
-      '$runtimeType fill: $fill fillEvenOdd: $fillEvenOdd stroke:$stroke strokeWidth:$strokeWidth strokeDashArray:$strokeDashArray fontSize:$fontSize fontFamily:$fontFamily textAnchor:$textAnchor ';
+      '$runtimeType fill: $fill fillEvenOdd: $fillEvenOdd stroke:$stroke strokeWidth:$strokeWidth strokeDashArray:$strokeDashArray fontSize:$fontSize fontFamily:$fontFamily textAnchor:$textAnchor dominantBaseline:$dominantBaseline';
 }
