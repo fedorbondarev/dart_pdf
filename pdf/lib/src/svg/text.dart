@@ -77,13 +77,14 @@ class SvgText extends SvgOperation {
 
     switch (_brush.dominantBaseline!) {
       case SvgDominantBaseline.middle:
+        offset = PdfPoint(offset.x, offset.y + metrics.height / 4);
         break;
       case SvgDominantBaseline.hanging:
         offset = PdfPoint(offset.x, offset.y + metrics.height / 2);
         break;
       case SvgDominantBaseline.auto:
       case SvgDominantBaseline.textTop:
-        offset = PdfPoint(offset.x, offset.y - metrics.height / 2);
+        // offset = PdfPoint(offset.x, offset.y - metrics.height / 2);
         break;
     }
 
