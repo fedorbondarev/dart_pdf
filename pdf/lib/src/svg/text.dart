@@ -51,21 +51,15 @@ class SvgText extends SvgOperation {
   ]) {
     final _brush = SvgBrush.fromXml(element, brush, painter);
 
-    final dx =
-        SvgParser.getNumeric(element, 'dx', _brush, defaultValue: 0)!.sizeValue;
-    final dy =
-        SvgParser.getNumeric(element, 'dy', _brush, defaultValue: 0)!.sizeValue;
+    final dx = SvgParser.getNumeric(element, 'dx', _brush, defaultValue: 0)!.sizeValue;
+    final dy = SvgParser.getNumeric(element, 'dy', _brush, defaultValue: 0)!.sizeValue;
     final x = SvgParser.getNumeric(element, 'x', _brush)?.sizeValue;
     final y = SvgParser.getNumeric(element, 'y', _brush)?.sizeValue;
 
-    final text = element.children
-        .where((node) => node is XmlText || node is XmlCDATA)
-        .map((node) => node.value)
-        .join()
-        .trim();
+    final text =
+        element.children.where((node) => node is XmlText || node is XmlCDATA).map((node) => node.value).join().trim();
 
-    final font = painter.getFontCache(
-        _brush.fontFamily!, _brush.fontStyle!, _brush.fontWeight!)!;
+    final font = painter.getFontCache(_brush.fontFamily!, _brush.fontStyle!, _brush.fontWeight!)!;
     final pdfFont = font.getFont(Context(document: painter.document));
     final metrics = pdfFont.stringMetrics(text) * _brush.fontSize!.sizeValue;
     offset = PdfPoint((x ?? offset.x) + dx, (y ?? offset.y) + dy);
@@ -78,6 +72,19 @@ class SvgText extends SvgOperation {
         break;
       case SvgTextAnchor.end:
         offset = PdfPoint(offset.x - metrics.width, offset.y);
+        break;
+    }
+
+    switch (_brush.dominantBaseline!) {
+      case SvgDominantBaseline.middle:
+        offset = PdfPoint(offset.x, offset.y + metrics.height / 4);
+        break;
+      case SvgDominantBaseline.hanging:
+        offset = PdfPoint(offset.x, offset.y + metrics.height / 2);
+        break;
+      case SvgDominantBaseline.auto:
+      case SvgDominantBaseline.textTop:
+        // offset = PdfPoint(offset.x, offset.y - metrics.height / 2);
         break;
     }
 
@@ -150,8 +157,7 @@ class SvgText extends SvgOperation {
         canvas.setGraphicState(PdfGraphicState(opacity: brush.strokeOpacity));
       }
       brush.stroke!.setStrokeColor(this, canvas);
-      canvas.drawString(font, brush.fontSize!.sizeValue, text, 0, 0,
-          mode: PdfTextRenderingMode.stroke);
+      canvas.drawString(font, brush.fontSize!.sizeValue, text, 0, 0, mode: PdfTextRenderingMode.stroke);
     }
 
     canvas.restoreContext();
@@ -168,8 +174,7 @@ class SvgText extends SvgOperation {
       ..setTransform(Matrix4.identity()
         ..scale(1.0, -1.0)
         ..translate(x, -y!))
-      ..drawString(font, brush.fontSize!.sizeValue, text, 0, 0,
-          mode: PdfTextRenderingMode.clip)
+      ..drawString(font, brush.fontSize!.sizeValue, text, 0, 0, mode: PdfTextRenderingMode.clip)
       ..restoreContext();
 
     for (final span in tspan) {
