@@ -41,24 +41,33 @@ class SvgPainter {
     final brush = parser.colorFilter == null
         ? SvgBrush.defaultContext
         : SvgBrush.defaultContext
-            .copyWith(fill: SvgColor(color: parser.colorFilter));
+          .copyWith(fill: SvgColor(color: parser.colorFilter));
 
     SvgGroup.fromXml(parser.root, this, brush).paint(_canvas!);
   }
 
-  final _fontCache = <String, Font>{};
+  final _fontCache = <String, PdfFont>{};
 
-  Font? getFontCache(String fontFamily, String fontStyle, String fontWeight) {
+  PdfFont getPdfFontCache(String fontFamily, String fontStyle, String fontWeight) {
     final cache = '$fontFamily-$fontStyle-$fontWeight';
 
     if (!_fontCache.containsKey(cache)) {
-      _fontCache[cache] = getFont(fontFamily, fontStyle, fontWeight);
+      final pdfFont = getFont(fontFamily, fontStyle, fontWeight)?.buildFont(document) ?? getDefaultPdfFont();
+      _fontCache[cache] = pdfFont;
     }
 
-    return _fontCache[cache];
+    return _fontCache[cache]!;
   }
 
-  Font getFont(String fontFamily, String fontStyle, String fontWeight) {
+  PdfFont getDefaultPdfFont() {
+    if (document.fonts.isEmpty) {
+      return PdfFont.helvetica(document);
+    } else {
+      return document.fonts.first;
+    }
+  }
+
+  Font? getFont(String fontFamily, String fontStyle, String fontWeight) {
     switch (fontFamily) {
       case 'serif':
         switch (fontStyle) {
@@ -95,20 +104,6 @@ class SvgPainter {
         return Font.courierBoldOblique();
     }
 
-    switch (fontStyle) {
-      case 'normal':
-        switch (fontWeight) {
-          case 'normal':
-          case 'lighter':
-            return Font.helvetica();
-        }
-        return Font.helveticaBold();
-    }
-    switch (fontWeight) {
-      case 'normal':
-      case 'lighter':
-        return Font.helveticaOblique();
-    }
-    return Font.helveticaBoldOblique();
+    return null;
   }
 }

@@ -59,8 +59,7 @@ class SvgText extends SvgOperation {
     final text =
         element.children.where((node) => node is XmlText || node is XmlCDATA).map((node) => node.value).join().trim();
 
-    final font = painter.getFontCache(_brush.fontFamily!, _brush.fontStyle!, _brush.fontWeight!)!;
-    final pdfFont = font.getFont(Context(document: painter.document));
+    final pdfFont = painter.getPdfFontCache(_brush.fontFamily!, _brush.fontStyle!, _brush.fontWeight!);
     final metrics = pdfFont.stringMetrics(text) * _brush.fontSize!.sizeValue;
     offset = PdfPoint((x ?? offset.x) + dx, (y ?? offset.y) + dy);
 
