@@ -62,7 +62,7 @@ class SvgText extends SvgOperation {
     final pdfFont = painter.getPdfFontCache(_brush.fontFamily!, _brush.fontStyle!, _brush.fontWeight!);
     final metrics = pdfFont.stringMetrics(text) * _brush.fontSize!.sizeValue;
     offset = PdfPoint((x ?? offset.x) + dx, (y ?? offset.y) + dy);
-
+    
     switch (_brush.textAnchor!) {
       case SvgTextAnchor.start:
         break;
@@ -76,14 +76,13 @@ class SvgText extends SvgOperation {
 
     switch (_brush.dominantBaseline!) {
       case SvgDominantBaseline.middle:
-        offset = PdfPoint(offset.x, offset.y + metrics.height / 4);
+        offset = PdfPoint(offset.x, offset.y + metrics.ascent / 2);
         break;
       case SvgDominantBaseline.hanging:
-        offset = PdfPoint(offset.x, offset.y + metrics.height / 2);
+        offset = PdfPoint(offset.x, offset.y + metrics.ascent);
         break;
       case SvgDominantBaseline.auto:
       case SvgDominantBaseline.textTop:
-        // offset = PdfPoint(offset.x, offset.y - metrics.height / 2);
         break;
     }
 
